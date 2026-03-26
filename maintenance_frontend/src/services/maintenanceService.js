@@ -22,6 +22,26 @@ function clone(x) {
 }
 
 /**
+ * Best-effort normalization for endpoints that are expected to return a list.
+ * Some backends return wrapper objects like `{ items: [...] }` or `{ data: [...] }`.
+ *
+ * Keeping this logic in the service layer ensures all UI consumers can safely
+ * assume array semantics (e.g. `.filter`, `.map`).
+ *
+ * @param {any} payload
+ * @returns {any[]}
+ */
+function coerceArray(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object") {
+    if (Array.isArray(payload.items)) return payload.items;
+    if (Array.isArray(payload.data)) return payload.data;
+    if (Array.isArray(payload.results)) return payload.results;
+  }
+  return [];
+}
+
+/**
  * PUBLIC_INTERFACE
  * List equipment.
  */
@@ -197,7 +217,10 @@ export async function createWorkOrderFromAlert(payload) {
  */
 export async function listWorkOrders(params = {}) {
   return withFallback(
-    async () => apiRequest("/work-orders", { query: params }),
+    async () => {
+      const res = await apiRequest("/work-orders", { query: params });
+      return coerceArray(res);
+    },
     async () => {
       const { status } = params;
       let wos = mockDb.workOrders.slice();
