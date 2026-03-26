@@ -47,7 +47,10 @@ function coerceArray(payload) {
  */
 export async function listEquipment() {
   return withFallback(
-    async () => apiRequest("/equipment"),
+    async () => {
+      const res = await apiRequest("/equipment");
+      return coerceArray(res);
+    },
     async () => clone(mockDb.equipment)
   );
 }
@@ -84,7 +87,10 @@ export async function createEquipment(payload) {
  */
 export async function listLogs(params = {}) {
   return withFallback(
-    async () => apiRequest("/logs", { query: params }),
+    async () => {
+      const res = await apiRequest("/logs", { query: params });
+      return coerceArray(res);
+    },
     async () => {
       const { equipmentId } = params;
       const logs = equipmentId ? mockDb.logs.filter((l) => l.equipmentId === equipmentId) : mockDb.logs;
@@ -293,7 +299,10 @@ export async function closeWorkOrder(payload) {
  */
 export async function listParts() {
   return withFallback(
-    async () => apiRequest("/parts"),
+    async () => {
+      const res = await apiRequest("/parts");
+      return coerceArray(res);
+    },
     async () => clone(mockDb.parts)
   );
 }
