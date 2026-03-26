@@ -1,82 +1,49 @@
-# Lightweight React Template for KAVIA
+# Predictive Maintenance Frontend (React)
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+Production-ready React UI for a Predictive Maintenance Alert & Work Order System.
 
 ## Features
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- Side navigation app shell (Ocean Professional theme)
+- Pages:
+  - Dashboard
+  - Equipment Register
+  - Parameter Logging (auto-alert creation on threshold breach)
+  - Alerts Center (convert alert → work order)
+  - Work Order Board (status updates, reserve parts, closure + audit trail)
+  - Parts Inventory
+- Service layer with **automatic mock fallback** for preview readiness
+- React Query for server-state, loading/error handling, and cache invalidation
 
-## Getting Started
+## Run locally
 
-In the project directory, you can run:
+From `maintenance_frontend/`:
 
-### `npm start`
-
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-### `npm test`
-
-Launches the test runner in interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-## Customization
-
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
+```bash
+npm install
+npm start
 ```
 
-### Components
+App runs at `http://localhost:3000`.
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+## Backend integration
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+Set env variables (do **not** commit `.env`):
 
-## Learn More
+- `REACT_APP_API_BASE_URL`: your FastAPI base URL (no trailing slash), e.g. `http://localhost:3001`
+- `REACT_APP_USE_MOCKS`: `true` to force mock mode
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+See `.env.example`.
 
-### Code Splitting
+### Mock fallback behavior
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+If `REACT_APP_USE_MOCKS=false` (default) the app will try the backend first. If endpoints are missing/unavailable, it falls back to in-memory mock services so the UI remains fully functional for preview.
 
-### Analyzing the Bundle Size
+## Folder structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `src/pages/*` page-level views
+- `src/components/*` reusable UI
+- `src/layouts/*` app shell layout
+- `src/services/*` API + mock-backed domain services
+- `src/utils/*` business logic (threshold evaluation, scoring, formatting)
+- `src/state/*` React Query client setup

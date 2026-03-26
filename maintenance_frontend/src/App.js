@@ -1,48 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useMemo } from "react";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import "./App.css";
 
-// PUBLIC_INTERFACE
+import { createAppQueryClient } from "./state/queryClient";
+import { AppShell } from "./layouts/AppShell";
+import { DashboardPage } from "./pages/DashboardPage";
+import { EquipmentPage } from "./pages/EquipmentPage";
+import { LoggingPage } from "./pages/LoggingPage";
+import { AlertsPage } from "./pages/AlertsPage";
+import { WorkOrdersPage } from "./pages/WorkOrdersPage";
+import { PartsPage } from "./pages/PartsPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { listAlerts, listWorkOrders } from "./services/maintenanceService";
+
+const queryClient = createAppQueryClient();
+
+function ShellWrapper() {
+  const alertsQ = useQuery({ queryKey: ["alerts"], queryFn: () => listAlerts({ status: "Open" }) });
+  const workQ = useQuery({ queryKey: ["workOrders"], queryFn: () => listWorkOrders({}) });
+
+  const meta = useMemo(() => {
+    const alertsOpen = (alertsQ.data || []).length;
+    const workOpen = (workQ.data || []).filter((w) => w.status !== "Closed").length;
+    const backendMode = String(process.env.REACT_APP_USE_MOCKS || "").toLowerCase() === "true" ? "Mock" : "Auto";
+    return { alertsOpen, workOpen, backendMode };
+  }, [alertsQ.data, workQ.data]);
+
+  return <AppShell meta={meta} />;
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * Main application component (routes + providers).
+ */
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  const router = useMemo(
+    () =>
+      createBrowserRouter([
+        {
+          path: "/",
+          element: <ShellWrapper />,
+          errorElement: <NotFoundPage />,
+          children: [
+            { index: true, element: <DashboardPage /> },
+            { path: "equipment", element: <EquipmentPage /> },
+            { path: "logging", element: <LoggingPage /> },
+            { path: "alerts", element: <AlertsPage /> },
+            { path: "work-orders", element: <WorkOrdersPage /> },
+            { path: "parts", element: <PartsPage /> },
+            { path: "*", element: <NotFoundPage /> },
+          ],
+        },
+      ]),
+    []
+  );
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 }
 
