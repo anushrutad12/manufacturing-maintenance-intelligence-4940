@@ -164,7 +164,10 @@ export async function createLog(payload) {
  */
 export async function listAlerts(params = {}) {
   return withFallback(
-    async () => apiRequest("/alerts", { query: params }),
+    async () => {
+      const res = await apiRequest("/alerts", { query: params });
+      return coerceArray(res);
+    },
     async () => {
       const { equipmentId, status } = params;
       let alerts = mockDb.alerts.slice();
